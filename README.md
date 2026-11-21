@@ -4,7 +4,7 @@ SeaGlass Studio is an offline-first digital painting app. Paint with customizabl
 
 ## Windows beta
 
-The planned `0.1.0-beta.5` installer requires Windows x64 and Microsoft Edge WebView2. The installer is unsigned and Windows may show a publisher warning. This manual-download beta has a separate app profile and no automatic updates. Keep backups of important artwork. [Releases](https://github.com/Supah9889/seaglass-studio-releases/releases)
+The `0.1.0-beta.5` installer requires Windows x64 and Microsoft Edge WebView2. The installer is unsigned and Windows may show a publisher warning. This manual-download beta has a separate app profile and no automatic updates. Keep backups of important artwork. [Download the beta](https://github.com/Supah9889/seaglass-studio-releases/releases/tag/v0.1.0-beta.5).
 
 ## Build from source
 
