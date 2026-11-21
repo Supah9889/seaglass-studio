@@ -1,0 +1,20 @@
+import {afterEach,describe,expect,it,vi} from 'vitest';
+import {HistoryManager,HISTORY_MAX_BYTES} from './history';
+import {captureLayerStructure,renameLayer} from './layers';
+import {snapshot} from './document';
+import type {DocumentModel,Layer,Snapshot} from './document';
+
+afterEach(()=>vi.unstubAllGlobals());
+function fixture(){
+  const createCanvas=()=>{let value=0;const ctx={getImageData:()=>({data:new Uint8ClampedArray([value,0,0,255])}),putImageData:(image:{data:Uint8ClampedArray})=>{value=image.data[0];},drawImage:()=>{}};return{width:1,height:1,getContext:()=>ctx,set:(next:number)=>{value=next;},read:()=>value};};
+  const original=createCanvas();original.set(200);const layer={id:'layer-a',name:'Layer A',visible:true,locked:false,opacity:1,canvas:original} as unknown as Layer,doc:DocumentModel={width:1,height:1,layers:[layer],activeId:layer.id};
+  vi.stubGlobal('crypto',{randomUUID:()=> 'restored-id'});vi.stubGlobal('document',{createElement:()=>createCanvas()});
+  return{doc,layer,original,history:new HistoryManager()};
+}
+describe('mixed pixel and layer history',()=>{
+ it('undoes and redoes raster edits and metadata edits in order without restoring stale pixels',()=>{const f=fixture(),beforePixels=[{id:f.layer.id,name:f.layer.name,visible:true,locked:false,opacity:1,activeDocumentLayerId:f.layer.id,data:{data:new Uint8ClampedArray([10,0,0,255])}}] as never[];f.history.pushPixels(beforePixels,f.doc);const beforeRename=captureLayerStructure(f.doc);renameLayer(f.doc,f.layer.id,'Renamed');f.history.pushLayerState(beforeRename,f.doc);expect(f.doc.layers[0].name).toBe('Renamed');expect(f.history.undo(f.doc)).toBe(true);expect(f.doc.layers[0].name).toBe('Layer A');expect(f.history.undo(f.doc)).toBe(true);expect(f.doc.layers[0].canvas.getContext('2d')!.getImageData(0,0,1,1).data[0]).toBe(10);expect(f.history.redo(f.doc)).toBe(true);expect(f.doc.layers[0].canvas.getContext('2d')!.getImageData(0,0,1,1).data[0]).toBe(200);expect(f.history.redo(f.doc)).toBe(true);expect(f.doc.layers[0].name).toBe('Renamed');expect(f.doc.layers[0].canvas.getContext('2d')!.getImageData(0,0,1,1).data[0]).toBe(200);});
+ it('returns false when undo or redo has no operation',()=>{const f=fixture();expect(f.history.undo(f.doc)).toBe(false);expect(f.history.redo(f.doc)).toBe(false);});
+ it('undoes and redoes Alpha Lock and clipping metadata without copying raster pixels',()=>{const f=fixture(),before=captureLayerStructure(f.doc);f.layer.alphaLocked=true;f.layer.clipped=true;f.history.pushLayerState(before,f.doc);expect(f.history.undo(f.doc)).toBe(true);expect([f.layer.alphaLocked,f.layer.clipped]).toEqual([false,false]);expect(f.history.redo(f.doc)).toBe(true);expect([f.layer.alphaLocked,f.layer.clipped]).toEqual([true,true]);});
+ it('stores only the edited layer and restores it in place while leaving other layers untouched',()=>{const f=fixture();f.original.set(10);let otherValue=77;const otherCanvas={width:1,height:1,getContext:()=>({getImageData:()=>({data:new Uint8ClampedArray([otherValue,0,0,255])}),putImageData:(image:{data:Uint8ClampedArray})=>{otherValue=image.data[0]}}),read:()=>otherValue},other={id:'layer-b',name:'Layer B',visible:true,locked:false,opacity:1,canvas:otherCanvas} as unknown as Layer;f.doc.layers.push(other);const before=snapshot(f.doc,[f.layer.id]);expect(before).toHaveLength(1);f.original.set(200);f.history.pushPixels(before,f.doc);expect(f.history.pixelBytes).toBe(4);expect(f.history.undo(f.doc)).toBe(true);expect(f.doc.layers[0].canvas).toBe(f.original);expect(f.original.read()).toBe(10);expect(otherCanvas.read()).toBe(77);expect(f.history.redo(f.doc)).toBe(true);expect(f.original.read()).toBe(200);expect(otherCanvas.read()).toBe(77);});
+ it('trims snapshots beyond the aggregate memory budget without retaining partial entries',()=>{const f=fixture(),oversize=[{id:f.layer.id,name:f.layer.name,visible:true,locked:false,opacity:1,activeDocumentLayerId:f.layer.id,data:{data:{byteLength:HISTORY_MAX_BYTES+1}}}] as unknown as Snapshot[];f.history.pushPixels(oversize,f.doc);expect(f.history.undoCount).toBe(0);expect(f.history.pixelBytes).toBe(0);});
+});

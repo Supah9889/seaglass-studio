@@ -1,0 +1,28 @@
+# Local dependencies and generated builds
+/node_modules/
+/dist/
+/coverage/
+/target/
+/target-*/
+/src-tauri/target/
+/src-tauri/target-*/
+/src-tauri/gen/
+*.tsbuildinfo
+*.log
+
+# Local artwork, exports, and beta QA notes
+/*.seaglass
+/seaglass-artwork*.png
+/BETA_READINESS.md
+
+# Local environment and release-signing material
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+*.sig
+*.keystore
+*.jks

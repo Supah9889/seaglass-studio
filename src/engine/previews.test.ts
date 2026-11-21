@@ -1,0 +1,12 @@
+import {describe,expect,it,vi} from 'vitest';
+import {drawBrushCursor,renderLayerThumbnail,drawShapePreview} from './previews';
+import type {Layer} from './document';
+import type {Tool} from './paint';
+function mockCanvas(width=100,height=100){const ctx={clearRect:vi.fn(),save:vi.fn(),restore:vi.fn(),beginPath:vi.fn(),arc:vi.fn(),ellipse:vi.fn(),stroke:vi.fn(),fill:vi.fn(),setLineDash:vi.fn(),createRadialGradient:vi.fn(()=>({addColorStop:vi.fn()})),drawImage:vi.fn(),globalAlpha:1,strokeStyle:'',fillStyle:'',lineWidth:1};return{canvas:{width,height,getContext:()=>ctx} as unknown as HTMLCanvasElement,ctx};}
+describe('non-destructive previews',()=>{
+ it('draws tool-specific cursor indicators only on the overlay canvas',()=>{const{canvas,ctx}=mockCanvas();drawBrushCursor(canvas,{x:20,y:30},'softAirbrush',24,2,'#123456',20,5);expect(ctx.clearRect).toHaveBeenCalledWith(0,0,100,100);expect(ctx.createRadialGradient).toHaveBeenCalled();expect(ctx.stroke).toHaveBeenCalled();const state={artCanvas:{untouched:true}};expect(state.artCanvas).toEqual({untouched:true});});
+ it('clears its overlay when the cursor is hidden or the hand tool is selected',()=>{const{canvas,ctx}=mockCanvas();drawBrushCursor(canvas,null,'brush',10,1,'#000000',10,4);drawBrushCursor(canvas,{x:1,y:1},'hand',10,1,'#000000',10,4);expect(ctx.clearRect).toHaveBeenCalledTimes(2);expect(ctx.stroke).not.toHaveBeenCalled();});
+ it('scales actual layer contents into a small thumbnail without changing the layer canvas',()=>{const{canvas,ctx}=mockCanvas(48,32),layerCanvas={width:2000,height:1000},layer={canvas:layerCanvas} as Layer;renderLayerThumbnail(layer,canvas);expect(ctx.drawImage).toHaveBeenCalledWith(layerCanvas,0,4,48,24);expect(layerCanvas.width).toBe(2000);expect(layerCanvas.height).toBe(1000);});
+ it('provides separate cursor previews for spray and splatter tools',()=>{const{canvas,ctx}=mockCanvas();for(const t of ['spray','splatter'] as Tool[])drawBrushCursor(canvas,{x:50,y:50},t,40,1,'#00aa99',30,12);expect(ctx.fill).toHaveBeenCalled();expect(ctx.ellipse).toHaveBeenCalled();});
+ it('renders shape previews only on the overlay canvas and clears the prior preview',()=>{const{canvas,ctx}=mockCanvas();drawShapePreview(canvas,'ellipse',{x:10,y:20},{x:40,y:60},2,'#123456',.5,4,false);expect(ctx.clearRect).toHaveBeenCalledWith(0,0,100,100);expect(ctx.ellipse).toHaveBeenCalledWith(25,40,15,20,0,0,Math.PI*2);expect(ctx.stroke).toHaveBeenCalled();});
+});

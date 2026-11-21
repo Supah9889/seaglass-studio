@@ -1,0 +1,40 @@
+{
+  "name": "seaglass-studio",
+  "version": "0.1.0-beta.5",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "prebuild": "npm run version:check",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:firefox": "node scripts/firefox-e2e.mjs",
+    "desktop:dev": "tauri dev",
+    "desktop:build": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/build-private-beta.ps1",
+    "version:check": "node scripts/check-version-sync.mjs",
+    "notices": "node scripts/generate-notices.mjs",
+    "notices:check": "node scripts/generate-notices.mjs --check"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.12.4",
+    "@tauri-apps/plugin-dialog": "^2.8.4",
+    "@tauri-apps/plugin-fs": "^2.7.1",
+    "@tauri-apps/plugin-updater": "^2.14.1",
+    "fflate": "^0.8.3",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.12.5",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "fake-indexeddb": "^6.2.8",
+    "selenium-webdriver": "^4.51.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.0.5",
+    "vitest": "^5.1.0"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "SeaGlass Studio Beta",
+  "mainBinaryName": "seaglass-public-beta",
+  "identifier": "studio.seaglass.publicbeta",
+  "build": {
+    "beforeBuildCommand": "npm run build -- --mode private-beta --outDir target-private-beta/frontend",
+    "frontendDist": "../target-private-beta/frontend"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "SeaGlass Studio Beta",
+        "width": 1440,
+        "height": 900,
+        "minWidth": 960,
+        "minHeight": 640,
+        "resizable": true,
+        "center": true,
+        "dragDropEnabled": false,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "capabilities": [
+        {
+          "identifier": "private-beta",
+          "windows": [
+            "main"
+          ],
+          "permissions": [
+            "core:default",
+            "dialog:default",
+            "fs:allow-write-file"
+          ]
+        }
+      ]
+    }
+  },
+  "bundle": {
+    "createUpdaterArtifacts": false,
+    "windows": {
+      "nsis": {
+        "installerHooks": "windows/private-beta-install.nsh"
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [],
+      "pubkey": ""
+    }
+  }
+}

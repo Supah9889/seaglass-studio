@@ -1,0 +1,90 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "SeaGlass Studio Development",
+  "version": "0.1.0-beta.5",
+  "identifier": "studio.seaglass.development",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "SeaGlass Studio Development",
+        "width": 1440,
+        "height": 900,
+        "minWidth": 960,
+        "minHeight": 640,
+        "resizable": true,
+        "center": true,
+        "dragDropEnabled": false,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self'",
+        "style-src": "'self'",
+        "img-src": "'self' data: blob:",
+        "font-src": "'self'",
+        "connect-src": "ipc: http://ipc.localhost",
+        "worker-src": "'none'",
+        "object-src": "'none'",
+        "base-uri": "'none'",
+        "form-action": "'none'",
+        "frame-ancestors": "'none'"
+      },
+      "devCsp": {
+        "default-src": "'self' http://localhost:5173",
+        "script-src": "'self' 'unsafe-inline' http://localhost:5173",
+        "style-src": "'self' 'unsafe-inline' http://localhost:5173",
+        "img-src": "'self' data: blob: http://localhost:5173",
+        "connect-src": "ipc: http://ipc.localhost http://localhost:5173 ws://localhost:5173",
+        "object-src": "'none'"
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "createUpdaterArtifacts": false,
+    "targets": [
+      "nsis"
+    ],
+    "category": "GraphicsAndDesign",
+    "shortDescription": "A customizable 2D digital art studio",
+    "longDescription": "SeaGlass Studio is an offline-first raster art studio for painting, layers, and illustration.",
+    "icon": [
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "embedBootstrapper",
+        "silent": true
+      },
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": [
+          "English"
+        ],
+        "displayLanguageSelector": false
+      }
+    },
+    "resources": {
+      "../THIRD-PARTY-NOTICES.txt": "THIRD-PARTY-NOTICES.txt",
+      "../LICENSE": "LICENSE",
+      "../ATTRIBUTION.md": "ATTRIBUTION.md"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "",
+      "endpoints": [],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}
